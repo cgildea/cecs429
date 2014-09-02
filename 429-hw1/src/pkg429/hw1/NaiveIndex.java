@@ -133,6 +133,7 @@ public class NaiveIndex {
                         documentResultList.add(index.mFileArray[i]);
                     }
                 }
+                Collections.sort(documentResultList, new AlphanumComparator());
                 printDocumentResultList(documentResultList);
             }
         }
