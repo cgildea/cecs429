@@ -21,7 +21,7 @@ public class NaiveIndex {
      * @param directory the Path of the directory to index.
      */
     public void indexDirectory(final Path directory) {
-      // will need a data structure to store all the terms in the document
+        // will need a data structure to store all the terms in the document
         // HashSet: a hashtable structure with constant-time insertion; does not
         // allow duplicate entries; stores entries in unsorted order.
 
@@ -62,7 +62,7 @@ public class NaiveIndex {
                 }
             });
 
-         // convert the dictionaries to sorted arrays, so we can use binary
+            // convert the dictionaries to sorted arrays, so we can use binary
             // search for finding indices.
             mTermArray = dictionary.toArray(new String[0]);
             mFileArray = files.toArray(new String[0]);
@@ -104,42 +104,45 @@ public class NaiveIndex {
     }
 
     public static void main(String[] args) {
-      // Example use: construct a NaiveIndex object, then use it to index all
+        // Example use: construct a NaiveIndex object, then use it to index all
         // *.txt files in a specified directory. Then print the results.
 
         NaiveIndex index = new NaiveIndex();
         Scanner scan = new Scanner(System.in);
 
-        String searchedWord = "";
+        LinkedList<String> documentResultList = new LinkedList<>();
 
         // this gets the current working path.
         final Path currentWorkingPath = Paths.get("").toAbsolutePath();
 
         index.indexDirectory(currentWorkingPath);
 
+        String searchedWord = "";
         while (!"quit".equalsIgnoreCase(searchedWord)) {
-            System.out.print("Enter a word to search: ");
+            System.out.print("\nEnter a word to search: ");
             searchedWord = scan.next();
-            try {
-                int column = Arrays.binarySearch(index.mTermArray, searchedWord);
-                if(column == -1){
-                    System.out.println("Word not found.");
-                }
-            } catch (Exception e) {
-
+            if ("quit".equalsIgnoreCase(searchedWord)) {
+                break;
             }
-            for(int i=0; i < index.mFileArray.length; i++){
-                if (index.mIndex[i][column] == true){
-                    
+            int column = Arrays.binarySearch(index.mTermArray, processWord(searchedWord));
+            if (column < 0) {
+                System.out.println("Word not found.");
+            } else {
+                for (int i = 0; i < index.mFileArray.length; i++) {
+                    if (index.mIndex[i][column] == true) {
+                        documentResultList.add(index.mFileArray[i]);
+                    }
                 }
-                else{
-                    
-                }
+                printDocumentResultList(documentResultList);
             }
-            //System.out.println(row);
         }
+    }
 
-//      index.printResults();
+    public static void printDocumentResultList(LinkedList<String> documentResultList) {
+        System.out.print("\nDocument results: ");
+        for (String documentResults : documentResultList) {
+            System.out.print(documentResults + "\t");
+        }
     }
 
     // reads the file given by Path; adds each term from file to the dictionary
@@ -215,7 +218,7 @@ public class NaiveIndex {
         }
         System.out.println("");
 
-      // for each file: print file name, then a 1 or 0 in each column of each 
+        // for each file: print file name, then a 1 or 0 in each column of each 
         // word in the index.
         int fNdx = 0;
         for (String file : mFileArray) {
