@@ -16,6 +16,20 @@ public class NaiveInvertedIndex {
       // docID to the list, and put it into the map. Otherwise add the docID
       // to the list that already exists in the map, but ONLY IF the list does
       // not already contain the docID.
+       if(mIndex.containsKey(term)){
+           if(this.getPostings(term).contains(documentID)){
+               return;
+           }
+           else{
+               this.getPostings(term).add(documentID);
+           }
+       }
+       else{
+           ArrayList<Integer> docID = new ArrayList();
+           docID.add(documentID);
+           mIndex.put(term, docID);
+       }
+       
       
       
       
@@ -24,7 +38,7 @@ public class NaiveInvertedIndex {
    public List<Integer> getPostings(String term) {
       // TO-DO: return the postings list for the given term from the index map.
       
-      return null;
+      return mIndex.get(term);
    }
    
    public int getTermCount() {
