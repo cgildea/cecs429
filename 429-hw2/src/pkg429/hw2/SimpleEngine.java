@@ -41,7 +41,7 @@ public class SimpleEngine {
                 if (file.toString().endsWith(".txt")) {
                // we have found a .txt file; add its name to the fileName list,
                     // then index the file and increase the document ID counter.
-                    System.out.println("Indexing file " + file.getFileName());
+                    //System.out.println("Indexing file " + file.getFileName());
 
                     fileNames.add(file.getFileName().toString());
                     indexFile(file.toFile(), index, mDocumentID);
@@ -61,9 +61,23 @@ public class SimpleEngine {
 
         printResults(index, fileNames);
 
-      // Implement the same program as in Homework 1: ask the user for a term,
-        // retrieve the postings list for that term, and print the names of the 
-        // documents which contain the term.
+        Scanner scan = new Scanner(System.in);
+
+        String searchedWord = "";
+        while (!"quit".equalsIgnoreCase(searchedWord)) {
+            System.out.print("\nEnter a word to search: ");
+            searchedWord = scan.next();
+            if ("quit".equalsIgnoreCase(searchedWord)) {
+                break;
+            }
+            List<String> documentNames = new ArrayList();
+
+            documentNames = index.getContainingDocuments(searchedWord, fileNames);
+            if(documentNames.isEmpty())
+                System.out.println("The word \""+ searchedWord + "\" was not found.");        
+            else
+                System.out.println("Word is found in: "+ documentNames.toString());
+        }
     }
 
     /**
@@ -79,9 +93,6 @@ public class SimpleEngine {
      */
     private static void indexFile(File file, NaiveInvertedIndex index,
             int docID) {
-        // TO-DO: finish this method for indexing a particular file.
-        // Construct a SimpleTokenStream for the given File.
-        // Read each token from the stream and add it to the index.
         try {
             SimpleTokenStream tokenStream = new SimpleTokenStream(file);
             while(tokenStream.hasNextToken()){
@@ -94,18 +105,13 @@ public class SimpleEngine {
 
     private static void printResults(NaiveInvertedIndex index,
             List<String> fileNames) {
-
-      // TO-DO: print the inverted index.
-        // Retrieve the dictionary from the index. (It will already be sorted.)
-        // For each term in the dictionary, retrieve the postings list for the
-        // term. Use the postings list to print the list of document names that
-        // contain the term. (The document ID in a postings list corresponds to 
-        // an index in the fileNames list.)
-      // Print the postings list so they are all left-aligned starting at the
-        // same column, one space after the longest of the term lengths. Example:
-        // 
-        // as:      document0 document3 document4 document5
-        // engines: document1
-        // search:  document2 document4  
+        int longestWord = 0;
+        for (String dict : index.getDictionary()) {
+            longestWord = Math.max(longestWord, dict.length());
+        }
+        for(String token : index.getDictionary()){
+            System.out.format("%-" + longestWord + "s: %s\n", token, index.getContainingDocuments(token, fileNames).toString());
+        }
+       
     }
 }
