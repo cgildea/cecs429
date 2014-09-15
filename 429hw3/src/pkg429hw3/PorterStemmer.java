@@ -8,8 +8,6 @@ import java.util.regex.*;
 
 public class PorterStemmer {
 
-    private static final Map<String, String> STEM = createStem();
-
     // a single consonant
     private static final String c = "[^aeiou]";
     // a single vowel
@@ -21,7 +19,7 @@ public class PorterStemmer {
     private static final String V = v + "[aeiou]*";
 
     // this regex pattern tests if the token has measure > 0 [at least one VC].
-    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + V + C);
+    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + V + C + "(.*)?");
 
     // this regex pattern tests if the token has a measure equal to 1
     private static final Pattern mEq1 = Pattern.compile(mGr0 + "(" + V + ")?$");
@@ -30,122 +28,247 @@ public class PorterStemmer {
     private static final Pattern mGr1 = Pattern.compile(mGr0 + V + C);
 
     // this regrex pattern tests if the token has a vowel after the first (optional) C
-    private static final Pattern cThenV = Pattern.compile("^(" + C + ")?" + V);
+    private static final Pattern hasV = Pattern.compile("(.*)?" + V + "(.*)?");
 
     // this regrex patten tests if the token ends in a double consonant NOT *L *S *Z
-    private static final Pattern doubleC = Pattern.compile("([^aeioulsz])\\1$");
+    private static final Pattern doubleC = Pattern.compile("(.*)?([^aeioulsz])\\2$");
 
     // this regrx pattern tests if the token has a measure of 1 and the last c is not w, x, or y
     private static final Pattern cVCNotWXY = Pattern.compile("^(" + C + ")?" + v + "[^aeiouywxy]$");
 
     public static String processToken(String token) {
-        String prefix, newPrefix;
-
         if (token.length() < 3) {
             return token; // token must be at least 3 chars
         }
-        // step 1a
-//      if (token.endsWith("sses")) {
-//         token = token.substring(0, token.length() - 2);
-//      }
+        token = step1a(token);
+        token = step1b(token);
+        token = step1c(token);
+        token = step2(token);
+        token = step3(token);
+        token = step4(token);
+        token = step5(token);
+        System.out.println(token);
 
-        for (int i = 0; i < STEM.size(); i++) {
-            prefix = (String) STEM.keySet().toArray()[i];
-            newPrefix = (String) STEM.values().toArray()[i];
-
-            step1a(token);
-            while (i < 2) {
-                if (token.endsWith(prefix)) {
-                    System.out.println("PREFIX -- " + prefix);
-                    System.out.println("NEW PREFIX -- " + newPrefix);
-                    token = token.substring(0, token.length() - prefix.length());
-                    token += newPrefix;
-                    System.out.println(token);
-                    break;
-                }
-            }
-        }
-      // program the other steps in 1a. 
-        // note that Step 1a.3 implies that there is only a single 's' as the 
-        //	suffix; ss does not count. you may need a regex pattern here for 
-        // "not s followed by s".
-
-        // step 1b
-//      boolean doStep1bb = false;
-//      //		step 1b
-//      if (token.endsWith("eed")) { // 1b.1
-//         // token.substring(0, token.length() - 3) is the stem prior to "eed".
-//         // if that has m>0, then remove the "d".
-//         String stem = token.substring(0, token.length() - 3);
-//         if (mGr0.matcher(stem).matches()) { // if the pattern matches the stem
-//            token = stem + "ee";
-//         }
-//      }
-//      // program the rest of 1b. set the boolean doStep1bb to true if Step 1b* 
-//      // should be performed.
-//
-//      // step 1b*, only if the 1b.2 or 1b.3 were performed.
-//      if (doStep1bb) {
-//         if (token.endsWith("at") || token.endsWith("bl")
-//          || token.endsWith("iz")) {
-//
-//            token = token + "e";
-//         }
-//         // use the regex patterns you wrote for 1b*.4 and 1b*.5
-//      }
-        // step 1c
-        // program this step. test the suffix of 'y' first, then test the 
-        // condition *v*.
-        // step 2
-        // program this step. for each suffix, see if the token ends in the 
-        // suffix. 
-        //		* if it does, extract the stem, and do NOT test any other suffix.
-        //    * take the stem and make sure it has m > 0.
-        //			* if it does, complete the step. if it does not, do not 
-        //				attempt any other suffix.
-        // you may want to write a helper method for this. a matrix of 
-        // "suffix"/"replacement" pairs might be helpful. It could look like
-        // string[][] step2pairs = {  new string[] {"ational", "ate"}, 
-        //										new string[] {"tional", "tion"}, ....
-        // step 3
-        // program this step. the rules are identical to step 2 and you can use
-        // the same helper method. you may also want a matrix here.
-        // step 4
-        // program this step similar to step 2/3, except now the stem must have
-        // measure > 1.
-        // note that ION should only be removed if the suffix is SION or TION, 
-        // which would leave the S or T.
-        // as before, if one suffix matches, do not try any others even if the 
-        // stem does not have measure > 1.
-        // step 5
-        // program this step. you have a regex for m=1 and for "Cvc", which
-        // you can use to see if m=1 and NOT Cvc.
-        // all your code should change the variable token, which represents
-        // the stemmed term for the token.
         return token;
     }
 
     public static String step1a(String token) {
-        for (int i = 0; i < STEM.size(); i++) {
+        final Map<String, String> step1a = createStep1a();
 
-            String prefix = (String) STEM.keySet().toArray()[i];
-            String newPrefix = (String) STEM.values().toArray()[i];
+        for (int i = 0; i < step1a.size(); i++) {
 
-            if (token.endsWith(prefix)) {
-                System.out.println("PREFIX -- " + prefix);
-                System.out.println("NEW PREFIX -- " + newPrefix);
-                token = token.substring(0, token.length() - prefix.length())+ newPrefix;
-                System.out.println(token);
+            String prefix = (String) step1a.keySet().toArray()[i];
+            String newPrefix = (String) step1a.values().toArray()[i];
+
+            if (token.endsWith(prefix) && !token.endsWith("ss")) {
+                token = token.substring(0, token.length() - prefix.length()) + newPrefix;
+                break;
             }
         }
         return token;
     }
 
-    private static Map<String, String> createStem() {
+    public static String step1b(String token) {
+        final Map<String, String> step1b = createStep1b();
+
+        for (int i = 0; i < step1b.size(); i++) {
+
+            String suffix = (String) step1b.keySet().toArray()[i];
+            String newSuffix = (String) step1b.values().toArray()[i];
+            Pattern[] patterns = {mGr0, hasV, hasV};
+
+            if (token.endsWith(suffix)) {
+                if (patterns[i].matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                    token = token.substring(0, token.length() - suffix.length()) + newSuffix;
+                    if (i > 0) {
+                        token = step1bStar(token);
+                    }
+                }
+                break;
+            }
+        }
+        return token;
+    }
+
+    public static String step1bStar(String token) {
+        final Map<String, String> step1bStar = createStep1bStar();
+
+        for (int i = 0; i < step1bStar.size(); i++) {
+
+            String suffix = (String) step1bStar.keySet().toArray()[i];
+            String newSuffix = (String) step1bStar.values().toArray()[i];
+
+            if (token.endsWith(suffix)) {
+                token = token.substring(0, token.length() - suffix.length()) + newSuffix;
+                return token;
+            }
+        }
+        if (doubleC.matcher(token).matches()) {
+            token = token.substring(0, token.length() - 1);
+            System.out.println(token);
+        } else if (mEq1.matcher(token).matches() && cVCNotWXY.matcher(token).matches()) {
+            token += "e";
+        }
+        return token;
+    }
+
+    public static String step1c(String token) {
+        if (token.endsWith("y") && hasV.matcher(token).matches()) {
+            token = token.substring(0, token.length() - 1) + "i";
+        }
+        return token;
+    }
+
+    public static String step2(String token) {
+        final Map<String, String> step2 = createStep2();
+
+        for (int i = 0; i < step2.size(); i++) {
+
+            String suffix = (String) step2.keySet().toArray()[i];
+            String newSuffix = (String) step2.values().toArray()[i];
+
+            if (token.endsWith(suffix)) {
+                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                    token = token.substring(0, token.length() - suffix.length()) + newSuffix;
+                }
+                break;
+            }
+        }
+        return token;
+    }
+
+    public static String step3(String token) {
+        final Map<String, String> step3 = createStep3();
+
+        for (int i = 0; i < step3.size(); i++) {
+
+            String suffix = (String) step3.keySet().toArray()[i];
+            String newSuffix = (String) step3.values().toArray()[i];
+
+            if (token.endsWith(suffix)) {
+                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                    token = token.substring(0, token.length() - suffix.length()) + newSuffix;
+                }
+                break;
+            }
+        }
+        return token;
+    }
+
+    public static String step4(String token) {
+        final Map<String, String> step4 = createStep4();
+
+        for (int i = 0; i < step4.size(); i++) {
+
+            String suffix = (String) step4.keySet().toArray()[i];
+            String newSuffix = (String) step4.values().toArray()[i];
+
+            if (token.endsWith(suffix)) {
+                if (mGr1.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                    token = token.substring(0, token.length() - suffix.length()) + newSuffix;
+                }
+                break;
+            }
+        }
+        return token;
+    }
+    
+    public static String step5(String token) {
+
+        if(token.endsWith("e") && mGr1.matcher(token.substring(0, token.length() - 1)).matches()){
+            return token.substring(0, token.length() - 1);     
+        }
+        else if(token.endsWith("e") && mEq1.matcher(token.substring(0, token.length() - 1)).matches()
+                && cVCNotWXY.matcher(token.substring(0, token.length() - 1)).matches()){
+            return token.substring(0, token.length() - 1);     
+        }
+        else if(token.endsWith("ll") && mGr1.matcher(token.substring(0, token.length() - 1)).matches()){
+            return token.substring(0, token.length() - 1);     
+        }
+        return token;
+    }
+
+    private static Map<String, String> createStep1a() {
         Map<String, String> stem = new LinkedHashMap<>();
         stem.put("sses", "ss");
         stem.put("ies", "i");
         stem.put("s", "");
+        return Collections.unmodifiableMap(stem);
+    }
+
+    private static Map<String, String> createStep1b() {
+        Map<String, String> stem = new LinkedHashMap<>();
+        stem.put("eed", "ee");
+        stem.put("ed", "");
+        stem.put("ing", "");
+        return Collections.unmodifiableMap(stem);
+    }
+
+    private static Map<String, String> createStep1bStar() {
+        Map<String, String> stem = new LinkedHashMap<>();
+        stem.put("at", "ate");
+        stem.put("bl", "ble");
+        stem.put("iz", "ize");
+        return Collections.unmodifiableMap(stem);
+    }
+
+    private static Map<String, String> createStep2() {
+        Map<String, String> stem = new LinkedHashMap<>();
+        stem.put("ational", "ate");
+        stem.put("iveness", "ive");
+        stem.put("fulness", "ful");
+        stem.put("ization", "ize");
+        stem.put("ousness", "ous");
+        stem.put("tional", "tion");
+        stem.put("biliti", "ble");
+        stem.put("entli", "ent");
+        stem.put("ousli", "ous");
+        stem.put("ation", "ate");
+        stem.put("alism", "al");
+        stem.put("aviti", "ive");
+        stem.put("aliti", "al");
+        stem.put("enci", "ence");
+        stem.put("anci", "ance");
+        stem.put("izer", "ize");
+        stem.put("alli", "al");
+        stem.put("bli", "ble");
+        stem.put("eli", "e");
+        return Collections.unmodifiableMap(stem);
+    }
+
+    private static Map<String, String> createStep3() {
+        Map<String, String> stem = new LinkedHashMap<>();
+        stem.put("icate", "ic");
+        stem.put("ative", "");
+        stem.put("alize", "al");
+        stem.put("iciti", "ic");
+        stem.put("ical", "ic");
+        stem.put("ness", "");
+        stem.put("ful", "");
+        return Collections.unmodifiableMap(stem);
+    }
+
+    private static Map<String, String> createStep4() {
+        Map<String, String> stem = new LinkedHashMap<>();
+        stem.put("ement", "");
+        stem.put("tion", "t");
+        stem.put("sion", "s");
+        stem.put("ible", "");
+        stem.put("able", "");
+        stem.put("ence", "");
+        stem.put("ment", "");
+        stem.put("ance", "");
+        stem.put("ant", "");
+        stem.put("ent", "");
+        stem.put("ism", "");
+        stem.put("ate", "");
+        stem.put("iti", "");
+        stem.put("ous", "");
+        stem.put("ive", "");
+        stem.put("ize", "");
+        stem.put("al", "");
+        stem.put("er", "");
+        stem.put("ou", "");
         return Collections.unmodifiableMap(stem);
     }
 }
