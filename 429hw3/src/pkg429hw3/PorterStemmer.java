@@ -1,7 +1,6 @@
 package pkg429hw3;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.*;
@@ -19,13 +18,13 @@ public class PorterStemmer {
     private static final String V = v + "[aeiou]*";
 
     // this regex pattern tests if the token has measure > 0 [at least one VC].
-    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + V + C + "(.*)?");
+    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + "("  + V + C + ")+(" + V + ")?");
 
     // this regex pattern tests if the token has a measure equal to 1
     private static final Pattern mEq1 = Pattern.compile(mGr0 + "(" + V + ")?$");
 
     // this regex pattern tests if the token has a measure greater than 1
-    private static final Pattern mGr1 = Pattern.compile(mGr0 + V + C);
+    private static final Pattern mGr1 = Pattern.compile("^(" + C + ")?" + "("  + V + C + V + C + ")+(" + V + ")?");
 
     // this regrex pattern tests if the token has a vowel after the first (optional) C
     private static final Pattern hasV = Pattern.compile("(.*)?" + V + "(.*)?");
@@ -47,7 +46,6 @@ public class PorterStemmer {
         token = step3(token);
         token = step4(token);
         token = step5(token);
-        System.out.println(token);
 
         return token;
     }
@@ -78,7 +76,7 @@ public class PorterStemmer {
             Pattern[] patterns = {mGr0, hasV, hasV};
 
             if (token.endsWith(suffix)) {
-                if (patterns[i].matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                if (patterns[i].matcher(token.substring(0, token.length() - suffix.length())).find()) {
                     token = token.substring(0, token.length() - suffix.length()) + newSuffix;
                     if (i > 0) {
                         token = step1bStar(token);
@@ -103,17 +101,16 @@ public class PorterStemmer {
                 return token;
             }
         }
-        if (doubleC.matcher(token).matches()) {
+        if (doubleC.matcher(token).find()) {
             token = token.substring(0, token.length() - 1);
-            System.out.println(token);
-        } else if (mEq1.matcher(token).matches() && cVCNotWXY.matcher(token).matches()) {
+        } else if (mEq1.matcher(token).find() && cVCNotWXY.matcher(token).find()) {
             token += "e";
         }
         return token;
     }
 
     public static String step1c(String token) {
-        if (token.endsWith("y") && hasV.matcher(token).matches()) {
+        if (token.endsWith("y") && hasV.matcher(token).find()) {
             token = token.substring(0, token.length() - 1) + "i";
         }
         return token;
@@ -128,7 +125,7 @@ public class PorterStemmer {
             String newSuffix = (String) step2.values().toArray()[i];
 
             if (token.endsWith(suffix)) {
-                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).find()) {
                     token = token.substring(0, token.length() - suffix.length()) + newSuffix;
                 }
                 break;
@@ -146,7 +143,7 @@ public class PorterStemmer {
             String newSuffix = (String) step3.values().toArray()[i];
 
             if (token.endsWith(suffix)) {
-                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                if (mGr0.matcher(token.substring(0, token.length() - suffix.length())).find()) {
                     token = token.substring(0, token.length() - suffix.length()) + newSuffix;
                 }
                 break;
@@ -164,7 +161,7 @@ public class PorterStemmer {
             String newSuffix = (String) step4.values().toArray()[i];
 
             if (token.endsWith(suffix)) {
-                if (mGr1.matcher(token.substring(0, token.length() - suffix.length())).matches()) {
+                if (mGr1.matcher(token.substring(0, token.length() - suffix.length())).find()) {
                     token = token.substring(0, token.length() - suffix.length()) + newSuffix;
                 }
                 break;
@@ -175,14 +172,14 @@ public class PorterStemmer {
     
     public static String step5(String token) {
 
-        if(token.endsWith("e") && mGr1.matcher(token.substring(0, token.length() - 1)).matches()){
+        if(token.endsWith("e") && mGr1.matcher(token.substring(0, token.length() - 1)).find()){
             return token.substring(0, token.length() - 1);     
         }
-        else if(token.endsWith("e") && mEq1.matcher(token.substring(0, token.length() - 1)).matches()
-                && cVCNotWXY.matcher(token.substring(0, token.length() - 1)).matches()){
+        else if(token.endsWith("e") && mEq1.matcher(token.substring(0, token.length() - 1)).find()
+                && cVCNotWXY.matcher(token.substring(0, token.length() - 1)).find()){
             return token.substring(0, token.length() - 1);     
         }
-        else if(token.endsWith("ll") && mGr1.matcher(token.substring(0, token.length() - 1)).matches()){
+        else if(token.endsWith("ll") && mGr1.matcher(token.substring(0, token.length() - 1)).find()){
             return token.substring(0, token.length() - 1);     
         }
         return token;
