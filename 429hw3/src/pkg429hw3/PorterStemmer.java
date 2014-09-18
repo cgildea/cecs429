@@ -7,6 +7,13 @@ import java.util.regex.*;
 
 public class PorterStemmer {
 
+    final static Map<String, String> step1a = createStep1a();
+    final static Map<String, String> step1b = createStep1b();
+    final static Map<String, String> step2 = createStep2();
+    final static Map<String, String> step1bStar = createStep1bStar();
+    final static Map<String, String> step3 = createStep3();
+    final static Map<String, String> step4 = createStep4();
+
     // a single consonant
     private static final String c = "[^aeiou]";
     // a single vowel
@@ -18,13 +25,13 @@ public class PorterStemmer {
     private static final String V = v + "[aeiou]*";
 
     // this regex pattern tests if the token has measure > 0 [at least one VC].
-    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + "("  + V + C + ")+(" + V + ")?");
+    private static final Pattern mGr0 = Pattern.compile("^(" + C + ")?" + "(" + V + C + ")+(" + V + ")?");
 
     // this regex pattern tests if the token has a measure equal to 1
     private static final Pattern mEq1 = Pattern.compile(mGr0 + "(" + V + ")?$");
 
     // this regex pattern tests if the token has a measure greater than 1
-    private static final Pattern mGr1 = Pattern.compile("^(" + C + ")?" + "("  + V + C + V + C + ")+(" + V + ")?");
+    private static final Pattern mGr1 = Pattern.compile("^(" + C + ")?" + "(" + V + C + V + C + ")+(" + V + ")?");
 
     // this regrex pattern tests if the token has a vowel after the first (optional) C
     private static final Pattern hasV = Pattern.compile("(.*)?" + V + "(.*)?");
@@ -51,7 +58,6 @@ public class PorterStemmer {
     }
 
     public static String step1a(String token) {
-        final Map<String, String> step1a = createStep1a();
 
         for (int i = 0; i < step1a.size(); i++) {
 
@@ -67,7 +73,6 @@ public class PorterStemmer {
     }
 
     public static String step1b(String token) {
-        final Map<String, String> step1b = createStep1b();
 
         for (int i = 0; i < step1b.size(); i++) {
 
@@ -89,7 +94,6 @@ public class PorterStemmer {
     }
 
     public static String step1bStar(String token) {
-        final Map<String, String> step1bStar = createStep1bStar();
 
         for (int i = 0; i < step1bStar.size(); i++) {
 
@@ -117,7 +121,6 @@ public class PorterStemmer {
     }
 
     public static String step2(String token) {
-        final Map<String, String> step2 = createStep2();
 
         for (int i = 0; i < step2.size(); i++) {
 
@@ -135,7 +138,6 @@ public class PorterStemmer {
     }
 
     public static String step3(String token) {
-        final Map<String, String> step3 = createStep3();
 
         for (int i = 0; i < step3.size(); i++) {
 
@@ -153,7 +155,6 @@ public class PorterStemmer {
     }
 
     public static String step4(String token) {
-        final Map<String, String> step4 = createStep4();
 
         for (int i = 0; i < step4.size(); i++) {
 
@@ -169,18 +170,16 @@ public class PorterStemmer {
         }
         return token;
     }
-    
+
     public static String step5(String token) {
 
-        if(token.endsWith("e") && mGr1.matcher(token.substring(0, token.length() - 1)).find()){
-            return token.substring(0, token.length() - 1);     
-        }
-        else if(token.endsWith("e") && mEq1.matcher(token.substring(0, token.length() - 1)).find()
-                && cVCNotWXY.matcher(token.substring(0, token.length() - 1)).find()){
-            return token.substring(0, token.length() - 1);     
-        }
-        else if(token.endsWith("ll") && mGr1.matcher(token.substring(0, token.length() - 1)).find()){
-            return token.substring(0, token.length() - 1);     
+        if (token.endsWith("e") && mGr1.matcher(token.substring(0, token.length() - 1)).find()) {
+            return token.substring(0, token.length() - 1);
+        } else if (token.endsWith("e") && mEq1.matcher(token.substring(0, token.length() - 1)).find()
+                && cVCNotWXY.matcher(token.substring(0, token.length() - 1)).find()) {
+            return token.substring(0, token.length() - 1);
+        } else if (token.endsWith("ll") && mGr1.matcher(token.substring(0, token.length() - 1)).find()) {
+            return token.substring(0, token.length() - 1);
         }
         return token;
     }

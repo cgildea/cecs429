@@ -21,8 +21,7 @@ public class SimpleEngine {
 
         // the list of file names that were processed
         final List<String> fileNames = new ArrayList<String>();
-        
-        PorterStemmer ps = new PorterStemmer();
+       
         
         String porter;
 
@@ -76,7 +75,7 @@ public class SimpleEngine {
             }
             List<String> documentNames = new ArrayList();
 
-            porter = ps.processToken(searchedWord);
+            porter = PorterStemmer.processToken(searchedWord);
             documentNames = index.getContainingDocuments(porter, fileNames);
             if(documentNames.isEmpty())
                 System.out.println("The word \""+ searchedWord + "\" was not found.");        
@@ -98,13 +97,10 @@ public class SimpleEngine {
      */
     private static void indexFile(File file, NaiveInvertedIndex index,
             int docID) {
-        PorterStemmer ps = new PorterStemmer();
         try {
             SimpleTokenStream tokenStream = new SimpleTokenStream(file);
             while(tokenStream.hasNextToken()){
-//                String token;
-//                token = ps.processToken(tokenStream.nextToken());
-                index.addTerm(ps.processToken(tokenStream.nextToken()), docID);
+                index.addTerm(PorterStemmer.processToken(tokenStream.nextToken()), docID);
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(SimpleEngine.class.getName()).log(Level.SEVERE, null, ex);
