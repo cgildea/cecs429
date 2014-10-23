@@ -35,6 +35,7 @@ public class NaiveInvertedIndex {
    public String[] getDictionary() {
       String[] hashKeys;
       hashKeys = mIndex.keySet().toArray(new String[0]);
+      Arrays.sort(hashKeys);
       
       return hashKeys;
    }

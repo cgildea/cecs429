@@ -74,6 +74,7 @@ public class DiskInvertedIndex {
    public int[] GetPostings(String term) {
       long postingsPosition = BinarySearchVocabulary(term);
       if (postingsPosition >= 0) {
+    	  System.out.println("made it");
          return readPostingsFromFile(mPostings, postingsPosition);
       }
       return null;
